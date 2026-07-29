@@ -614,4 +614,22 @@ class AdminController extends Controller
 
         return response()->json($sequences);
     }
+
+    public function autoOptimize(Request $request)
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('app:auto-optimize-database');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            return response()->json([
+                'success' => true,
+                'message' => 'Database & application auto-cache optimization completed successfully without removing user data.',
+                'output' => trim($output)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Auto-optimization failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

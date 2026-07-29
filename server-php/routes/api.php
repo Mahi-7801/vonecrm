@@ -235,6 +235,9 @@ Route::prefix('admin')->middleware(['auth.jwt', 'admin'])->group(function () {
     Route::get('/pricing', [AdminController::class, 'getPricing']);
     Route::post('/pricing', [AdminController::class, 'updatePricing']);
     Route::post('/users/{id}/plan', [AdminController::class, 'updateUserPlan']);
+
+    // Auto Database Optimization & Cache Clearing (Zero data removal)
+    Route::match(['get', 'post'], '/auto-optimize', [AdminController::class, 'autoOptimize']);
 });
 
 // ─── Webhook Routes (No Auth) ──────────────────────────────

@@ -43,10 +43,13 @@ class SettingService
     public static function get(string $key, $default = null)
     {
         try {
-            $setting = Setting::where('key', $key)->first();
-            if ($setting && !empty($setting->value)) {
-                return self::decrypt($setting->value);
-            }
+            return \Illuminate\Support\Facades\Cache::remember('vone_setting_' . $key, 300, function () use ($key, $default) {
+                $setting = Setting::where('key', $key)->first();
+                if ($setting && !empty($setting->value)) {
+                    return self::decrypt($setting->value);
+                }
+                return $default;
+            });
         } catch (\Exception $e) {
             // Fallback
         }
@@ -55,6 +58,7 @@ class SettingService
 
     public static function set(string $key, string $value, bool $isSecret = false, string $group = 'general')
     {
+        \Illuminate\Support\Facades\Cache::forget('vone_setting_' . $key);
         $encryptedValue = self::encrypt($value);
         return Setting::updateOrCreate(
             ['key' => $key],
