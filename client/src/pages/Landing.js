@@ -165,7 +165,7 @@ export default function Landing() {
     <div className="landing-page">
       {/* Navbar */}
       <nav className="landing-nav">
-        <div className="landing-logo" onClick={() => navigate('/')}>
+        <div className="landing-logo" onClick={() => navigate('/admin/login')} style={{ cursor: 'pointer' }} title="Admin Login">
           <div className="landing-logo-icon">
             <FiMessageSquare size={20} />
           </div>

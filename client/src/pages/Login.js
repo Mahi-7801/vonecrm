@@ -30,13 +30,13 @@ export default function Login() {
     <div className="auth-container">
       <div className="auth-card">
 
-        {/* Logo */}
-        <div className="auth-logo">
+        {/* Logo - Click to open Admin Login */}
+        <div className="auth-logo" onClick={() => navigate('/admin/login')} style={{ cursor: 'pointer' }} title="Click for Admin Login">
           <div className="auth-logo-icon">
             <FiMessageSquare size={24} color="white" />
           </div>
         </div>
-        <h1>VONE DIGITALS CRM</h1>
+        <h1 onClick={() => navigate('/admin/login')} style={{ cursor: 'pointer' }}>VONE DIGITALS CRM</h1>
         <p className="subtitle">
           Sign in to your WhatsApp business automation suite
         </p>
@@ -111,9 +111,6 @@ export default function Login() {
 
         <p className="auth-link">
           Don't have an account? <Link to="/signup">Create one free</Link>
-        </p>
-        <p className="auth-link" style={{ marginTop: 8 }}>
-          Admin? <Link to="/admin/login">Admin login →</Link>
         </p>
       </div>
     </div>

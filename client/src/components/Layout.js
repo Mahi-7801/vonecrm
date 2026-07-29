@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import {
@@ -100,6 +100,7 @@ function SideSection({ sectionId, title, emoji, items, defaultOpen, openSections
 export default function Layout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -455,7 +456,11 @@ export default function Layout() {
       >
         {/* ── Logo / Brand ── */}
         <div style={{ padding: '18px 16px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <div
+            onClick={() => navigate(isAdmin ? '/admin' : '/admin/login')}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, cursor: 'pointer' }}
+            title="Admin Console"
+          >
             <div style={{
               width: 36, height: 36, borderRadius: 11,
               background: `linear-gradient(135deg, ${isAdmin ? '#f59e0b' : '#dc2626'}, ${isAdmin ? '#d97706' : '#991b1b'})`,
