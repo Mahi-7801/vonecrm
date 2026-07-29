@@ -12,12 +12,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let isRedirecting = false;
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      const path = window.location.pathname;
+      if (!isRedirecting && path !== '/login' && path !== '/admin/login' && path !== '/signup') {
+        isRedirecting = true;
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -53,15 +53,9 @@ export default function Templates() {
   useEffect(() => {
     fetchTemplates();
     fetchMetaTemplates();
-    // Auto-fetch Meta templates every 1 minute (60,000 ms) using configured keys
-    const interval = setInterval(() => {
-      fetchMetaTemplates();
-      fetchTemplates();
-    }, 60000);
-    return () => clearInterval(interval);
   }, [fetchTemplates, fetchMetaTemplates]);
 
-  useDataSync(fetchTemplates, 5000, 'templates');
+  useDataSync(fetchTemplates, 30000, 'templates');
 
   // Auto-generate template content based on name
   const autoGenerateFromName = (name) => {

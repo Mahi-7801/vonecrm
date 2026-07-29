@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Triggers an instant data sync event across all browser tabs/windows.
@@ -16,19 +16,21 @@ export const triggerDataSync = (key = 'global_sync') => {
 
 /**
  * Custom React hook for auto-syncing data.
- * Calls fetchFn:
- * 1. Immediately on mount
- * 2. Instantly when triggerDataSync() is fired (via Storage & Custom Event)
- * 3. Instantly when tab becomes visible (visibilitychange)
- * 4. Periodically every `intervalMs` (default: 8000ms)
+ * Uses useRef for fetchFn to prevent infinite re-render loops when unmemoized functions are passed.
  */
 export const useDataSync = (fetchFn, intervalMs = 8000, key = 'global_sync') => {
+  const savedFetchFn = useRef(fetchFn);
+
+  useEffect(() => {
+    savedFetchFn.current = fetchFn;
+  }, [fetchFn]);
+
   useEffect(() => {
     let isMounted = true;
 
     const safeFetch = () => {
-      if (isMounted && typeof fetchFn === 'function') {
-        fetchFn();
+      if (isMounted && typeof savedFetchFn.current === 'function') {
+        savedFetchFn.current();
       }
     };
 
@@ -49,7 +51,7 @@ export const useDataSync = (fetchFn, intervalMs = 8000, key = 'global_sync') => 
       }
     };
 
-    // 3. Tab Visibility & Focus Listener
+    // 3. Tab Visibility Listener
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         safeFetch();
@@ -58,7 +60,6 @@ export const useDataSync = (fetchFn, intervalMs = 8000, key = 'global_sync') => 
 
     window.addEventListener('storage', handleStorage);
     window.addEventListener('vone_local_sync', handleCustomSync);
-    window.addEventListener('focus', safeFetch);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // 4. Polling Interval Backup
@@ -71,9 +72,8 @@ export const useDataSync = (fetchFn, intervalMs = 8000, key = 'global_sync') => 
       isMounted = false;
       window.removeEventListener('storage', handleStorage);
       window.removeEventListener('vone_local_sync', handleCustomSync);
-      window.removeEventListener('focus', safeFetch);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (timer) clearInterval(timer);
     };
-  }, [fetchFn, intervalMs, key]);
+  }, [intervalMs, key]);
 };
