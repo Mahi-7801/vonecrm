@@ -111,6 +111,7 @@ Route::middleware('auth.jwt')->group(function () {
         Route::get('payments', [BillingController::class, 'payments']);
         Route::post('create-order', [BillingController::class, 'createOrder']);
         Route::post('verify-payment', [BillingController::class, 'verifyPayment']);
+        Route::get('invoice/{id}', [BillingController::class, 'downloadInvoice']);
     });
 
     // Broadcast

@@ -264,8 +264,20 @@ export default function Billing() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1rem' }}>
-                      +₹{parseFloat(p.amount).toFixed(2)}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1rem' }}>
+                          +₹{parseFloat(p.amount).toFixed(2)}
+                        </div>
+                        <a
+                          href={`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/billing/invoice/${p.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.72rem', color: '#3b82f6', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 3, marginTop: 2 }}
+                        >
+                          <FiFileText size={12} /> Tax Invoice PDF
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}
