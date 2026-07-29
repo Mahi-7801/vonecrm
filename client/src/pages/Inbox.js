@@ -42,10 +42,10 @@ export default function Inbox() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (selectedContact) {
+    if (selectedContact?.contact_id) {
       fetchMessages(selectedContact.contact_id);
     }
-  }, [selectedContact]);
+  }, [selectedContact?.contact_id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
