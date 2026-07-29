@@ -1,0 +1,185 @@
+# WhatsApp CRM — Antigravity Master Task Prompt
+
+## Project Goal
+Build a multi-tenant WhatsApp Business CRM SaaS platform. I (the platform owner) act as the BSP — I manage one master WhatsApp Cloud API token that sends messages on behalf of all connected client numbers. Clients sign up, connect their WhatsApp Business number, use the CRM (inbox, contacts, broadcast, chatbot flows, templates), and pay for their usage through Razorpay.
+
+## Stack (use exactly this — do not substitute)
+- Backend: Node.js + Express
+- Database: MySQL (I will manage it via phpMyAdmin)
+- Auth: JWT (jsonwebtoken) + bcrypt for password hashing
+- Realtime: Socket.io for live inbox updates
+- Frontend: React (Next.js App Router)
+- Payments: Razorpay
+- Messaging: WhatsApp Cloud API (Meta Graph API)
+
+## Build in this order, verifying each step works before moving on
+
+### Phase 1 — Foundation
+1. Scaffold Node.js/Express backend with folders: routes, middleware, db, config
+2. Set up MySQL connection pool (mysql2) and run the schema below
+3. Build auth routes: signup, login (JWT issued), password hashing with bcrypt
+4. Build authMiddleware (verifies JWT) and adminMiddleware (checks role='admin')
+5. Scaffold Next.js frontend with login/signup pages wired to the backend
+
+### Phase 2 — WhatsApp connection
+6. Build Meta Embedded Signup integration: frontend button opens the Meta popup, backend exchanges the returned code for phone_number_id and waba_id, saves to whatsapp_numbers table linked to the logged-in user
+7. Build the onboarding gate: if a logged-in user has no verified whatsapp_numbers row, redirect them to /onboarding/connect-number instead of the dashboard
+8. Build the webhook route (Express) that Meta calls on incoming messages — verify with WHATSAPP_WEBHOOK_VERIFY_TOKEN, store incoming messages in the messages table, push to the right client via Socket.io
+
+### Phase 3 — Core CRM screens
+9. Dashboard/home: balance, usage this month, active chats, quick stats
+10. Inbox: contact list (left) + realtime chat thread (right), send button that calls the WhatsApp send-message API using the master token + client's phone_number_id
+11. Contacts: CRUD, tags, custom fields, CSV import
+12. Templates: create/list, submit to Meta, track approval status field
+13. Broadcast: pick template + contact segment, send in bulk respecting Meta rate limits, show delivery status per recipient
+14. Flows (chatbot builder): store flow as JSON (nodes: send message / wait for reply / condition / assign tag), build a simple execution engine that runs on incoming webhook events matching a trigger
+
+### Phase 4 — Billing
+15. usage_log: every outgoing message insert logs category (marketing/utility/authentication/service) and cost
+16. Settings > Billing page: shows usage total and amount due
+17. Razorpay checkout integration: "Pay Now" button, backend creates an order, frontend opens Razorpay checkout
+18. Razorpay webhook route: verifies signature with RAZORPAY_WEBHOOK_SECRET, updates user balance on successful payment — this is the only source of truth for balance updates, never trust client-side confirmation
+
+### Phase 5 — Admin panel
+19. /admin routes protected by adminMiddleware
+20. Admin dashboard: all users, their connected numbers, balance, usage this month
+21. Per-user detail view: full usage_log, payment history, toggle prepaid/postpaid, suspend/enable number, manual balance adjustment field
+22. Pricing config screen: admin sets markup per message category over Meta's base rate
+
+## Database schema (MySQL — create these tables first)
+
+```sql
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('admin','client') DEFAULT 'client',
+  balance DECIMAL(10,2) DEFAULT 0,
+  credit_mode ENUM('prepaid','postpaid') DEFAULT 'postpaid',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE whatsapp_numbers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  phone_number_id VARCHAR(50),
+  waba_id VARCHAR(50),
+  verified BOOLEAN DEFAULT FALSE,
+  status ENUM('pending','verified','suspended') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE contacts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  name VARCHAR(255), phone VARCHAR(20),
+  tags JSON, custom_fields JSON,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL, contact_id INT,
+  direction ENUM('inbound','outbound'),
+  body TEXT, template_id INT, status VARCHAR(30),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id),
+  FOREIGN KEY (contact_id) REFERENCES contacts(id)
+);
+
+CREATE TABLE templates (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  name VARCHAR(255), category ENUM('marketing','utility','authentication'),
+  body TEXT, status ENUM('pending','approved','rejected') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE flows (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  name VARCHAR(255), flow_json JSON, active BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE flow_runs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  flow_id INT, contact_id INT,
+  current_node VARCHAR(100), state JSON,
+  FOREIGN KEY (flow_id) REFERENCES flows(id),
+  FOREIGN KEY (contact_id) REFERENCES contacts(id)
+);
+
+CREATE TABLE usage_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL, message_id INT,
+  category VARCHAR(30), cost DECIMAL(10,4),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE payments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  amount DECIMAL(10,2), method ENUM('razorpay','manual'),
+  razorpay_payment_id VARCHAR(100), added_by INT, note TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE agents (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  name VARCHAR(255), email VARCHAR(255), role VARCHAR(50),
+  FOREIGN KEY (owner_id) REFERENCES users(id)
+);
+
+CREATE TABLE chat_assignments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  contact_id INT, agent_id INT,
+  assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (contact_id) REFERENCES contacts(id),
+  FOREIGN KEY (agent_id) REFERENCES agents(id)
+);
+```
+
+## Environment variables (.env)
+
+```
+DB_HOST=localhost
+DB_NAME=whatsapp_crm
+DB_USER=root
+DB_PASS=
+
+JWT_SECRET=
+
+WHATSAPP_APP_ID=
+WHATSAPP_APP_SECRET=
+WHATSAPP_SYSTEM_USER_TOKEN=
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=
+WHATSAPP_GRAPH_API_VERSION=v21.0
+
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+
+PORT=5000
+NODE_ENV=development
+```
+
+## Critical rules the agent must follow
+- Every table has an `owner_id`. Every query in every route MUST filter by the logged-in user's id from the JWT, except when the route is behind adminMiddleware.
+- Never trust a client-reported payment as final — only the Razorpay webhook (signature-verified) may update `users.balance`.
+- The webhook route for WhatsApp must respond to Meta within a few seconds (ack fast, process async) or Meta will retry/flag it.
+- Category cost lookup (marketing/utility/authentication/service) must happen server-side at send time, never trust a cost value sent from the frontend.
+- Use parameterized queries everywhere (mysql2 placeholders) — no string-concatenated SQL, to avoid injection.
+
+## Verification checklist (after each phase, confirm before proceeding)
+- Phase 1: can sign up, log in, receive a valid JWT, protected route rejects missing/invalid token
+- Phase 2: Embedded Signup returns a valid phone_number_id, webhook receives a test message and stores it
+- Phase 3: sending a message from the inbox actually delivers via WhatsApp Cloud API and appears in the thread
+- Phase 4: a test Razorpay payment updates the correct user's balance via webhook, not before
+- Phase 5: an admin-role user can see all users' data; a client-role user cannot
