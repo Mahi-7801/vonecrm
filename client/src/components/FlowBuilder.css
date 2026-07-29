@@ -1,0 +1,721 @@
+.flow-builder {
+  position: relative;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 48px);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+/* Header */
+.flow-builder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+  gap: 16px;
+}
+
+.flow-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.flow-name-input {
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  padding: 8px 12px;
+  border-radius: 6px;
+  min-width: 180px;
+}
+
+.flow-name-input:focus {
+  outline: none;
+  background: var(--bg);
+}
+
+.flow-trigger-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.flow-trigger-input label {
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.flow-trigger-field {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  min-width: 200px;
+}
+
+.flow-trigger-field:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.flow-builder-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Body */
+.flow-builder-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.flow-sidebar {
+  width: 260px;
+  background: white;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flow-sidebar h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.flow-sidebar-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+
+/* Node Palette */
+.flow-node-palette {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: grab;
+  transition: all 0.15s;
+}
+
+.flow-node-palette:hover {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.flow-node-palette:active {
+  cursor: grabbing;
+}
+
+.flow-node-palette-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.flow-node-palette-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.flow-node-palette-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Node Editor */
+.flow-node-editor {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.flow-node-editor h4 {
+  margin-bottom: 12px;
+}
+
+.flow-editor-field {
+  margin-bottom: 12px;
+}
+
+.flow-editor-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.flow-editor-field input,
+.flow-editor-field select,
+.flow-editor-field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.flow-editor-field input:focus,
+.flow-editor-field select:focus,
+.flow-editor-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* Canvas */
+.flow-canvas {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  cursor: grab;
+  background:
+    radial-gradient(circle, #ddd 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.flow-canvas:active {
+  cursor: grabbing;
+}
+
+/* Zoom Controls */
+.flow-zoom-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+}
+
+.flow-zoom-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #1a1a2e;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.flow-zoom-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.flow-zoom-btn:active {
+  transform: scale(0.95);
+}
+
+.flow-zoom-reset {
+  width: auto;
+  padding: 0 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.flow-zoom-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 40px;
+  text-align: center;
+}
+
+.flow-canvas-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5000px;
+  height: 5000px;
+}
+
+/* Edges SVG */
+.flow-edges-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.flow-edge-path {
+  fill: none;
+  stroke: #94a3b8;
+  stroke-width: 2;
+  pointer-events: stroke;
+  cursor: pointer;
+  transition: stroke 0.15s;
+}
+
+.flow-edge-path:hover {
+  stroke: var(--danger);
+  stroke-width: 3;
+}
+
+.flow-edge-arrow {
+  fill: #94a3b8;
+}
+
+.flow-edge-label {
+  fill: var(--text-muted);
+  font-size: 11px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.flow-edge-connecting {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  pointer-events: none;
+}
+
+/* Nodes */
+.flow-node {
+  position: absolute;
+  width: 180px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+  cursor: move;
+  user-select: none;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  color: #1a1a2e;
+}
+
+.flow-node:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.flow-node.selected {
+  border-color: var(--primary);
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.25);
+}
+
+.flow-node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px 8px 0 0;
+  color: white;
+}
+
+.flow-node-icon {
+  font-size: 0.85rem;
+}
+
+.flow-node-type {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.flow-node-body {
+  padding: 10px 12px;
+  min-height: 32px;
+  background: white;
+}
+
+.flow-node-text {
+  font-size: 0.8rem;
+  color: #1a1a2e !important;
+  line-height: 1.4;
+  max-height: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.flow-node-url {
+  font-size: 0.7rem;
+  color: #6366f1 !important;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.flow-node-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.flow-node-btn {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e0f2fe;
+  color: #0369a1 !important;
+  white-space: nowrap;
+}
+
+/* Connection Ports */
+.flow-port {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border: 2px solid #94a3b8;
+  border-radius: 50%;
+  cursor: crosshair;
+  transition: all 0.15s;
+  z-index: 5;
+}
+
+.flow-port:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  transform: scale(1.3);
+}
+
+.flow-port-in {
+  top: 50%;
+  left: -7px;
+  transform: translateY(-50%);
+}
+
+.flow-port-in:hover {
+  transform: translateY(-50%) scale(1.3);
+}
+
+.flow-port-out {
+  top: 50%;
+  right: -7px;
+  transform: translateY(-50%);
+}
+
+.flow-port-out:hover {
+  transform: translateY(-50%) scale(1.3);
+}
+
+/* Node delete button */
+.flow-node-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s;
+  padding: 0;
+}
+
+.flow-node:hover .flow-node-delete {
+  opacity: 1;
+}
+
+.flow-node-delete:hover {
+  background: var(--danger);
+  opacity: 1;
+}
+
+/* Button Editing */
+.flow-buttons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.flow-button-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.flow-button-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.flow-button-target {
+  width: 120px;
+  padding: 6px 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.flow-button-remove {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.flow-button-remove:hover {
+  background: #fee;
+}
+
+.flow-button-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.flow-button-add:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.flow-list-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.flow-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.flow-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+}
+
+.flow-editor-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+
+/* Node buttons display */
+.flow-node-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.flow-node-btn {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-muted);
+}
+
+.flow-node-url {
+  font-size: 0.7rem;
+  color: var(--accent);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  word-break: break-all;
+}
+
+/* Test Panel */
+.flow-test-panel {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 48px);
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.flow-test-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.flow-test-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.flow-test-chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flow-test-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+}
+
+.flow-test-message.assistant {
+  align-self: flex-start;
+}
+
+.flow-test-message.button_click {
+  align-self: center;
+}
+
+.flow-test-message.system {
+  align-self: center;
+}
+
+.flow-test-bubble {
+  background: #e7faf3;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.flow-test-btn-click {
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 500;
+  padding: 4px 12px;
+  background: #e7faf3;
+  border-radius: 12px;
+}
+
+.flow-test-ai-badge {
+  font-size: 0.7rem;
+  color: #00b4d8;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.flow-test-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.flow-test-btn {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.flow-test-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: scale(1.02);
+}
+
+.flow-test-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.flow-test-system {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 8px 16px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+
+.flow-test-loading {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 8px 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .flow-sidebar {
+    width: 200px;
+  }
+
+  .flow-node {
+    width: 130px;
+  }
+}

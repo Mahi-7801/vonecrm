@@ -1,0 +1,12 @@
+node_modules/
+client/node_modules/
+server/node_modules/
+server-php/vendor/
+client/build/
+server/uploads/
+*.zip
+*.log
+.DS_Store
+Thumbs.db
+.mimocode/
+.env.local
